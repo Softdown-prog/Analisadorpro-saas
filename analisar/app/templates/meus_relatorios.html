@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="content-section">
+        <h2 class="mb-4">{{ title }}</h2>
+        <div class="alert alert-info" role="alert">
+            Seu plano atual: <strong>{{ nome_plano }}</strong>.
+            {% if nome_plano == 'Gratuito' or nome_plano == 'Básico' %}
+                <br>Este plano não permite o acesso a relatórios salvos. Faça upgrade para o plano Premium para ter acesso total.
+            {% endif %}
+        </div>
+
+        {% if reports.items %}
+            <div class="list-group">
+                {% for report in reports.items %}
+                    <div class="list-group-item list-group-item-action flex-column align-items-start mb-2">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">Análise para: <a href="{{ url_for('pro.ver_relatorio', report_id=report.id) }}">{{ report.url_analisada }}</a></h5> {# MODIFICADO #}
+                            <small class="text-muted">{{ report.data_criacao.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </div>
+                        <p class="mb-1">Status: {{ report.status }}</p>
+                        <div class="d-flex justify-content-end">
+                            <a href="{{ url_for('pro.ver_relatorio', report_id=report.id) }}" class="btn btn-sm btn-info me-2">Ver Detalhes</a> {# MODIFICADO #}
+                            {% if permite_exportacao %}
+                                <a href="{{ url_for('pro.exportar_csv', report_id=report.id) }}" class="btn btn-sm btn-success">Exportar CSV</a> {# MODIFICADO #}
+                            {% else %}
+                                <button class="btn btn-sm btn-secondary" disabled title="Recurso Premium">Exportar CSV (Premium)</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% for page_num in reports.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            {% if reports.page == page_num %}
+                                <li class="page-item active"><a class="page-link" href="{{ url_for('pro.meus_relatorios', page=page_num) }}">{{ page_num }}</a></li> {# MODIFICADO #}
+                            {% else %}
+                                <li class="page-item"><a class="page-link" href="{{ url_for('pro.meus_relatorios', page=page_num) }}">{{ page_num }}</a></li> {# MODIFICADO #}
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </nav>
+        {% else %}
+            <p class="text-muted">Você ainda não tem relatórios salvos. Faça uma análise no <a href="{{ url_for('pro.dashboard_pro') }}">Dashboard PRO</a> para começar.</p> {# MODIFICADO #}
+        {% endif %}
+    </div>
+{% endblock content %}
