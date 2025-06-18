@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="content-section">
+        <h2 class="mb-4">{{ title }}</h2>
+        <a href="{{ url_for('soft.admin_dashboard') }}" class="btn btn-secondary mb-3">Voltar ao Dashboard Admin</a> {# CORRIGIDO #}
+
+        <p class="alert alert-info">Esta página será desenvolvida para permitir o gerenciamento completo dos planos de assinatura (adicionar, editar, deletar preços e características).</p>
+
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome do Plano</th>
+                    <th>Preço Mensal</th>
+                    <th>Análises/Mês</th>
+                    <th>Salva Relatórios</th>
+                    <th>SEO Avançado</th>
+                    <th>Exportar CSV</th>
+                    <th>Sitemap</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plan in plans %}
+                    <tr>
+                        <td>{{ plan.id }}</td>
+                        <td>{{ plan.nome }}</td>
+                        <td>€{{ "%.2f"|format(plan.preco_mensal) }}</td>
+                        <td>{% if plan.max_analises_por_mes == -1 %}Ilimitado{% else %}{{ plan.max_analises_por_mes }}{% endif %}</td>
+                        <td>{{ "Sim" if plan.permite_salvar_relatorios else "Não" }}</td>
+                        <td>{{ "Sim" if plan.permite_seguranca_seo_avancado else "Não" }}</td>
+                        <td>{{ "Sim" if plan.permite_exportacao_csv else "Não" }}</td>
+                        <td>{{ "Sim" if plan.permite_sitemap_avancado else "Não" }}</td>
+                        <td>
+                            {# <a href="{{ url_for('soft.edit_plan', plan_id=plan.id) }}" class="btn btn-sm btn-info">Editar</a> #}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock content %}

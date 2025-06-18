@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="content-section">
+        <h2 class="mb-4">{{ title }}</h2>
+        <p class="lead">Bem-vindo ao seu Dashboard PRO, <strong>{{ current_user.username }}</strong>! Seu plano atual: <strong>{{ nome_plano }}</strong>.</p>
+        
+        {% if nome_plano == 'Gratuito' %}
+            <div class="alert alert-warning" role="alert">
+                Seu plano Gratuito tem funcionalidades limitadas. <a href="{{ url_for('payment.planos') }}" class="alert-link">Faça upgrade para um plano Premium</a> para acessar análises avançadas, salvar relatórios, exportar e mais!
+            </div>
+        {% endif %}
+
+        {# Painel de Botões para Funcionalidades #}
+        <h3 class="mt-4 mb-3">Ferramentas de Análise</h3>
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Análise de Site Avançada</h5>
+                        <p class="card-text">Realize uma análise completa de SEO On-Page e Links Quebrados com todas as métricas detalhadas.</p>
+                        <form id="analysisForm" method="POST" action="{{ url_for('pro.dashboard_pro') }}"> {# Adicionado ID #}
+                            {{ form.hidden_tag() }}
+                            <div class="form-group mb-3">
+                                {{ form.url.label(class="form-control-label") }}
+                                {{ form.url(class="form-control form-control-lg", placeholder="https://www.exemplo.com") }}
+                            </div>
+                            <button type="submit" class="btn btn-primary">Analisar Agora</button>
+                        </form>
+                        {# Loader para Análise de Site #}
+                        <div id="analysisLoader" class="text-center mt-3" style="display:none;">
+                            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem; color: #8A2BE2 !important;"> {# Cor Roxa #}
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Analisando o site... Isso pode levar alguns instantes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Gerador de Sitemap XML</h5>
+                        <p class="card-text">Crie um sitemap.xml para o seu site e otimize a indexação nos motores de busca.</p>
+                        <a href="{{ url_for('pro.sitemap_generator') }}" class="btn btn-info">Gerar Sitemap</a>
+                        {# Loader para Sitemap - pode ser adicionado no sitemap_generator.html #}
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Meus Relatórios Salvos</h5>
+                        <p class="card-text">Acesse e gerencie todos os relatórios de análise que você salvou anteriormente.</p>
+                        <a href="{{ url_for('pro.meus_relatorios') }}" class="btn btn-secondary">Ver Relatórios</a>
+                    </div>
+                </div>
+            </div>
+            {# Futuramente, mais cards para Google PageSpeed, Análise de Segurança, etc. #}
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Google PageSpeed Insights</h5>
+                        <p class="card-text">Analise a performance do seu site com métricas do Google PageSpeed (em breve).</p>
+                        <button class="btn btn-warning" disabled>Em Breve</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Script JavaScript para o Loader #}
+    <script>
+        document.getElementById('analysisForm').addEventListener('submit', function() {
+            document.getElementById('analysisLoader').style.display = 'block';
+            this.querySelector('button[type="submit"]').disabled = true; // Desabilita o botão
+        });
+    </script>
+{% endblock content %}
