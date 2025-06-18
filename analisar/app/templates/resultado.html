@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="content-section">
+        <h2 class="mb-4">Resultado da Análise para: {{ url }}</h2>
+
+        {% if resultados.get('error') %}
+            <div class="alert alert-danger" role="alert">
+                <strong>Erro na Análise:</strong> {{ resultados['error'] }}
+                <p>Por favor, verifique a URL e tente novamente.</p>
+            </div>
+        {% else %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Visão Geral</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>URL Analisada:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
+                    <p><strong>Status:</strong> Concluído</p>
+                    {# CORRIGIDO: Converte resultados.id para string antes de usar startswith() #}
+                    {% if resultados.id and not resultados.id|string.startswith('TEMP-') %}
+                        <p><strong>ID do Relatório:</strong> {{ resultados.id }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Verificação de SEO Essencial</h3>
+                </div>
+                <div class="card-body">
+                    {% if resultados.get('seo_check') %}
+                        <p><strong>Título da Página:</strong> {{ resultados['seo_check']['title']['text'] }} ({{ resultados['seo_check']['title']['length'] }} caracteres)</p>
+                        <p><strong>Meta Descrição:</strong> {{ resultados['seo_check']['meta_description']['text'] }} ({{ resultados['seo_check']['meta_description']['length'] }} caracteres)</p>
+                    {% else %}
+                        <p class="text-muted">Dados de SEO Essencial não disponíveis.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Verificação de SEO On-Page (Detalhes)</h3>
+                </div>
+                <div class="card-body">
+                    {% if resultados.get('onpage_seo_check') %}
+                        {% if resultados['onpage_seo_check'].get('message') %}
+                            <div class="alert alert-info" role="alert">
+                                <strong>{{ resultados['onpage_seo_check']['message'] }}</strong>
+                                {% if not is_authenticated %}
+                                <br>Para acessar esta funcionalidade, <a href="{{ url_for('auth.login') }}" class="alert-link">faça login</a> e assine um plano Premium.
+                                {% else %}
+                                <br>Faça upgrade para o plano Premium para acesso total.
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <h4>Tags de Cabeçalho (H1-H6)</h4>
+                            {% for h_level, h_texts in resultados['onpage_seo_check']['h_tags'].items() %}
+                                <p><strong>{{ h_level.upper() }}:</strong>
+                                    {% if h_texts %}
+                                        {% for text in h_texts %}
+                                            "{{ text }}" {% if not loop.last %}; {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        Nenhum {{ h_level.upper() }} encontrado.
+                                    {% endif %}
+                                </p>
+                                {% if h_level == 'h1' and h_texts|length > 1 %}
+                                    <div class="alert alert-warning" role="alert">
+                                        <strong>Aviso:</strong> Múltiplos H1s detectados ({{ h_texts|length }}). É recomendado ter apenas um H1 por página.
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+
+                            <h4 class="mt-4">Atributos `alt` em Imagens</h4>
+                            {% set img_alt = resultados['onpage_seo_check']['img_alt_tags'] %}
+                            {% if img_alt.missing or img_alt.empty %}
+                                <div class="alert alert-warning" role="alert">
+                                    <strong>Aviso:</strong> Foram encontradas imagens com atributos `alt` faltando ou vazios.
+                                </div>
+                            {% endif %}
+                            <p>Imagens com `alt` faltando: {{ img_alt.missing|length }}</p>
+                            {% if img_alt.missing %}
+                                <ul>
+                                    {% for src in img_alt.missing %}
+                                        <li>`{{ src }}`</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            <p>Imagens com `alt` vazio: {{ img_alt.empty|length }}</p>
+                            {% if img_alt.empty %}
+                                <ul>
+                                    {% for src in img_alt.empty %}
+                                        <li>`{{ src }}`</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            <p>Imagens com `alt` presente: {{ img_alt.present|length }}</p>
+
+                            <h4 class="mt-4">Meta Tag Robots</h4>
+                            {% set robots_meta = resultados['onpage_seo_check']['robots_meta'] %}
+                            <p><strong>Presente:</strong> {{ "Sim" if robots_meta.present else "Não" }}</p>
+                            {% if robots_meta.present %}
+                                <p><strong>Conteúdo:</strong> <code>{{ robots_meta.content }}</code></p>
+                                {% if 'noindex' in robots_meta.content.lower() %}
+                                    <div class="alert alert-danger" role="alert">
+                                        <strong>Alerta Crítico:</strong> A meta tag `robots` contém "noindex". Esta página não será indexada por motores de busca.
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <p class="text-muted">Meta tag `robots` não encontrada (padrão é index, follow).</p>
+                            {% endif %}
+
+                            <h4 class="mt-4">Tag Canonical</h4>
+                            {% set canonical = resultados['onpage_seo_check']['canonical_tag'] %}
+                            <p><strong>Presente:</strong> {{ "Sim" if canonical.present else "Não" }}</p>
+                            {% if canonical.present %}
+                                <p><strong>URL:</strong> <a href="{{ canonical.href }}" target="_blank">{{ canonical.href }}</a></p>
+                                <p><strong>Válida (Formato):</strong> {{ "Sim" if canonical.is_valid else "Não" }}</p>
+                                {% if not canonical.is_valid %}
+                                    <div class="alert alert-warning" role="alert">
+                                        <strong>Aviso:</strong> A URL na tag canonical pode não estar em um formato válido.
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <p class="text-muted">Tag `link rel="canonical"` não encontrada.</p>
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted">Dados de SEO On-Page Detalhada não disponíveis.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Verificação de Links</h3>
+                </div>
+                <div class="card-body">
+                    {% if resultados.get('link_check') and resultados['link_check'].get('broken_links') %}
+                        <h4>Links Quebrados (Status >= 400):</h4>
+                        {% if resultados['link_check']['broken_links'] %}
+                            <ul class="list-group">
+                                {% for link in resultados['link_check']['broken_links'] %}
+                                    <li class="list-group-item list-group-item-danger">
+                                        **URL:** `{{ link.url }}` <br> **Status:** `{{ link.status_code }}`
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-success">Nenhum link quebrado encontrado. Ótimo!</p>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted">Dados de Verificação de Links não disponíveis.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{{ url_for('public.analisar') }}" class="btn btn-secondary">Nova Análise</a>
+            </div>
+
+        {% endif %}
+    </div>
+{% endblock content %}
