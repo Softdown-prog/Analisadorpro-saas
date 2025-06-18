@@ -25,51 +25,35 @@ with app.app_context():
     free_plan.preco_mensal = 0.0
     print('Plano "Gratuito" atualizado/verificado.')
 
-    # --- Plano Básico (ID 2) ---
-    basic_plan = Plan.query.filter_by(id=2).first()
-    if not basic_plan:
-        basic_plan = Plan(id=2, nome='Básico')
-        db.session.add(basic_plan)
-        print('Plano "Básico" adicionado.')
-    basic_plan.max_analises_por_mes = 100
-    basic_plan.permite_exportacao_csv = False
-    basic_plan.permite_seguranca_seo_avancado = False
-    basic_plan.permite_salvar_relatorios = False
-    basic_plan.permite_sitemap_avancado = False
-    basic_plan.preco_mensal = 9.99
-    print('Plano "Básico" atualizado/verificado.')
+    # --- Plano Profissional (ID 2) ---
+    profissional_plan = Plan.query.filter_by(id=2).first()
+    if not profissional_plan:
+        profissional_plan = Plan(id=2, nome='Profissional')
+        db.session.add(profissional_plan)
+        print('Plano "Profissional" adicionado.')
+    profissional_plan.max_analises_por_mes = 15
+    profissional_plan.permite_exportacao_csv = True
+    profissional_plan.permite_seguranca_seo_avancado = True
+    profissional_plan.permite_salvar_relatorios = True
+    profissional_plan.permite_sitemap_avancado = True
+    profissional_plan.preco_mensal = 39.00
+    print('Plano "Profissional" atualizado/verificado.')
 
-    # --- Plano Pro (ID 3) ---
-    pro_plan = Plan.query.filter_by(id=3).first()
-    if not pro_plan:
-        pro_plan = Plan(id=3, nome='Pro')
-        db.session.add(pro_plan)
-        print('Plano "Pro" adicionado.')
-    pro_plan.max_analises_por_mes = -1
-    pro_plan.permite_exportacao_csv = True
-    pro_plan.permite_seguranca_seo_avancado = True
-    pro_plan.permite_salvar_relatorios = True
-    pro_plan.permite_sitemap_avancado = True
-    pro_plan.preco_mensal = 29.99
-    print('Plano "Pro" atualizado/verificado.')
+    # --- Plano Empresa (ID 3) ---
+    empresa_plan = Plan.query.filter_by(id=3).first()
+    if not empresa_plan:
+        empresa_plan = Plan(id=3, nome='Empresa')
+        db.session.add(empresa_plan)
+        print('Plano "Empresa" adicionado.')
+    empresa_plan.max_analises_por_mes = -1
+    empresa_plan.permite_exportacao_csv = True
+    empresa_plan.permite_seguranca_seo_avancado = True
+    empresa_plan.permite_salvar_relatorios = True
+    empresa_plan.permite_sitemap_avancado = True
+    empresa_plan.preco_mensal = 119.00
+    print('Plano "Empresa" atualizado/verificado.')
 
     db.session.commit()
     print('Todos os planos de assinatura inicializados/verificados com sucesso no banco de dados!')
 
-    # Opcional: Criar um usuário admin inicial (SE VOCÊ QUISER CRIAR UM ADMIN POR SCRIPT, NÃO POR PAINEL SOFT)
-    # APENAS PARA TESTE INICIAL. REMOVA ISTO APÓS A PRIMEIRA EXECUÇÃO OU USE COM CAUTELA!
-    # print("Tentando criar usuário administrador de teste...")
-    # admin_email = "admin@analisadorpro.com"
-    # admin_username = "adminpro"
-    # admin_password = "adminpassword123" # TROQUE ISSO POR UMA SENHA FORTE
-
-    # existing_admin = User.query.filter_by(email=admin_email).first()
-    # if not existing_admin:
-    #     hashed_password = bcrypt.generate_password_hash(admin_password).decode('utf-8')
-    #     new_admin = User(username=admin_username, email=admin_email, password=hashed_password,
-    #                      plan_id=pro_plan.id) # Admin tem plano Pro
-    #     db.session.add(new_admin)
-    #     db.session.commit()
-    #     print(f"Usuário administrador '{admin_username}' ({admin_email}) criado com plano '{pro_plan.nome}'.")
-    # else:
-    #     print(f"Usuário administrador '{admin_email}' já existe.")
+    # Remover ou comentar a seção create_admin_command se você não quiser criar admin via script.
